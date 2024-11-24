@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Music App</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #121212;
+        color: white;
+        text-align: center;
+      }
+      #player-container {
+        margin: 20px;
+      }
+      iframe {
+        border: none;
+        width: 100%;
+        max-width: 400px;
+        height: 225px;
+      }
+      #controls {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>My Music App</h1>
+    <input type="text" id="search-input" placeholder="Search for songs" />
+    <button onclick="searchSong()">Search</button>
+
+    <div id="results"></div>
+    <div id="player-container">
+      <iframe id="player" src="" allow="autoplay" allowfullscreen></iframe>
+    </div>
+  </body>
+
+  <link rel="manifest" href="manifest.json" />
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").then(() => {
+        console.log("Service worker registered.");
+      });
+    }
+  </script>
+
+  <script>
+    const API_KEY = "AIzaSyBjEvyc3zRXQNIX0BUddODPwOOxbaABOIU";
+    const player = document.getElementById("player");
+    const results = document.getElementById("results");
+
+    async function searchSong() {
+      const query = document.getElementById("search-input").value;
+      if (!query) {
+        alert("Please enter a search term.");
+        return;
+      }
+
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(
+        query
+      )}&type=video&key=${API_KEY}&maxResults=5`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+
+      displayResults(data.items);
+    }
+
+    function displayResults(videos) {
+      results.innerHTML = "";
+      videos.forEach((video) => {
+        const title = video.snippet.title;
+        const videoId = video.id.videoId;
+
+        const button = document.createElement("button");
+        button.innerText = title;
+        button.onclick = () => playVideo(videoId);
+
+        results.appendChild(button);
+        results.appendChild(document.createElement("br"));
+      });
+    }
+
+    function playVideo(videoId) {
+      const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
+      player.src = embedUrl;
+    }
+  </script>
+</html>
